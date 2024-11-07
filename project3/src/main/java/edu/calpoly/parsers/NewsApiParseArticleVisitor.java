@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.calpoly.abstractions.Article;
 import edu.calpoly.abstractions.ParseArticleVisitor;
-import edu.calpoly.models.newsapi.NewsApiArticle;
 import edu.calpoly.models.newsapi.NewsApiError;
 import edu.calpoly.models.newsapi.NewsApiResponse;
 import edu.calpoly.models.newsapi.NewsApiSuccess;
@@ -13,7 +12,7 @@ import java.util.ArrayList;
 
 public class NewsApiParseArticleVisitor implements ParseArticleVisitor {
     @Override
-    public ArrayList<? extends Article> visitJsonString(String content) throws JsonProcessingException {
+    public ArrayList<Article> visitJsonString(String content) throws JsonProcessingException {
         NewsApiResponse newsApiResponse;
         ObjectMapper mapper = new ObjectMapper();
 
@@ -25,7 +24,7 @@ public class NewsApiParseArticleVisitor implements ParseArticleVisitor {
         }
 
         if (newsApiResponse.isSuccess()) {
-            return newsApiResponse.getSuccessObject().articles();
+            return new ArrayList<>(newsApiResponse.getSuccessObject().articles());
         } else {
            return new ArrayList<>();
         }

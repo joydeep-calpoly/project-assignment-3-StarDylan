@@ -1,7 +1,6 @@
 package edu.calpoly.abstractions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import edu.calpoly.models.newsapi.NewsApiArticle;
 
 import java.util.ArrayList;
 
@@ -14,5 +13,5 @@ public interface ParseArticleVisitor {
      * @return Successfully parsed Article object or null if invalid
      * @throws JsonProcessingException if Json is Invalid
      */
-    ArrayList<? extends Article> visitJsonString(String content) throws JsonProcessingException;
+    ArrayList<Article> visitJsonString(String content) throws JsonProcessingException;
 }

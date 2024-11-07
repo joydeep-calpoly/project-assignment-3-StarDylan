@@ -18,7 +18,7 @@ public interface Article {
         return title() != null && description() != null && url() != null && publishedAt() != null;
     }
 
-    static List<? extends Article> acceptParser(ParseArticleVisitor visitor, String json) throws JsonProcessingException {
+    static List<Article> acceptParser(ParseArticleVisitor visitor, String json) throws JsonProcessingException {
         return visitor.visitJsonString(json);
     }
 

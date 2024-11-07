@@ -2,15 +2,12 @@ package edu.calpoly;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.calpoly.abstractions.Article;
-import edu.calpoly.models.SimpleFormatArticle;
-import edu.calpoly.models.newsapi.NewsApiResponse;
 import edu.calpoly.parsers.NewsApiParseArticleVisitor;
 import edu.calpoly.parsers.SimpleFormatParseArticleVisitor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,9 +1,6 @@
 package edu.calpoly;
 
 import edu.calpoly.abstractions.Article;
-import edu.calpoly.models.SimpleFormatArticle;
-import edu.calpoly.models.newsapi.NewsApiArticle;
-import edu.calpoly.models.newsapi.NewsApiResponse;
 import edu.calpoly.parsers.NewsApiParseArticleVisitor;
 import edu.calpoly.parsers.SimpleFormatParseArticleVisitor;
 
@@ -16,7 +13,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -72,12 +68,14 @@ public class Main {
                     .uri(URI.create("https://newsapi.org/v2/top-headlines?country=us&apiKey=%s".formatted(apiKey)))
                     .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+            String body = response.body();
 
-            if (response.statusCode() != 200) {
-                logger.log(Level.SEVERE, "Unexpected response code: " + response.statusCode() + "\n" + response.body());
+            if (statusCode != 200 && logger != null) {
+                logger.log(Level.SEVERE, () -> "Unexpected response code: %s%n%s".formatted(statusCode, body));
             }
 
-            return response.body();
+            return body;
         }
     }
 
