@@ -2,8 +2,12 @@ package edu.calpoly.models;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.calpoly.abstractions.Article;
+import edu.calpoly.parsers.NewsApiParseArticleVisitor;
+import edu.calpoly.parsers.SimpleFormatParseArticleVisitor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,15 +23,15 @@ class TestSimpleFormat {
                   "url": "https://canvas.calpoly.edu/courses/55411/assignments/274503"
                 }""";
 
-        SimpleFormatArticle article = SimpleFormatArticle.fromJson(data);
+        List<? extends Article> articles = Article.acceptParser(new SimpleFormatParseArticleVisitor(), data);
 
-        assertEquals(article, new SimpleFormatArticle("Assignment #2",
+        assertEquals(1, articles.size());
+        assertEquals(new SimpleFormatArticle("Assignment #2",
                 "Extend Assignment #1 to support multiple sources and to introduce source processor.",
                 "https://canvas.calpoly.edu/courses/55411/assignments/274503",
-                "2021-04-16 09:53:23.709229"));
+                "2021-04-16 09:53:23.709229"), articles.getFirst());
 
-        assertNotNull(article);
-        assertTrue(article.isValid());
+        assertTrue(articles.getFirst().isValid());
     }
 
     @Test
@@ -42,6 +46,6 @@ class TestSimpleFormat {
                 }""";
 
 
-        assertThrows(JsonProcessingException.class, () -> SimpleFormatArticle.fromJson(data));
+        assertThrows(JsonProcessingException.class, () -> Article.acceptParser(new SimpleFormatParseArticleVisitor(), data));
     }
 }

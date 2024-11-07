@@ -1,5 +1,9 @@
 package edu.calpoly.abstractions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.util.List;
+
 public interface Article {
     String title();
     String description();
@@ -13,4 +17,9 @@ public interface Article {
     default boolean isValid() {
         return title() != null && description() != null && url() != null && publishedAt() != null;
     }
+
+    static List<? extends Article> acceptParser(ParseArticleVisitor visitor, String json) throws JsonProcessingException {
+        return visitor.visitJsonString(json);
+    }
+
 }

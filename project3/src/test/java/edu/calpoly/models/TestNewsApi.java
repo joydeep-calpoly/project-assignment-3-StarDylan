@@ -1,10 +1,12 @@
 package edu.calpoly.models;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.calpoly.abstractions.Article;
 import edu.calpoly.models.newsapi.NewsApiArticle;
 import edu.calpoly.models.newsapi.NewsApiError;
 import edu.calpoly.models.newsapi.NewsApiResponse;
 import edu.calpoly.models.newsapi.NewsApiSuccess;
+import edu.calpoly.parsers.NewsApiParseArticleVisitor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,9 +27,9 @@ class TestNewsApi {
                 }
                 """;
 
-        NewsApiResponse response = NewsApiResponse.fromJson(json);
+        List<? extends Article> articles = Article.acceptParser(new NewsApiParseArticleVisitor(), json);
 
-        assertTrue(response.isSuccess());
+        assertEquals(0, articles.size());
     }
 
     @Test
@@ -48,11 +50,10 @@ class TestNewsApi {
                 }
                 """;
 
-        NewsApiResponse response = NewsApiResponse.fromJson(json);
+        List<? extends Article> articles = Article.acceptParser(new NewsApiParseArticleVisitor(), json);
 
-        assertTrue(response.isSuccess());
-        assertEquals(1, response.getSuccessObject().articles().size());
-        assertEquals(new NewsApiSuccess("ok", 1, List.of(new NewsApiArticle("test", "test2", "https://google.com", "2024-10-09T01:00:00Z"))), response.getSuccessObject());
+        assertEquals(1, articles.size());
+        assertEquals(new NewsApiArticle("test", "test2", "https://google.com", "2024-10-09T01:00:00Z"), articles.getFirst());
 
     }
 
@@ -67,9 +68,7 @@ class TestNewsApi {
                 }
                 """;
 
-        NewsApiResponse response = NewsApiResponse.fromJson(json);
-
-        assertFalse(response.isSuccess());
-        assertEquals(new NewsApiError("error", "weirdError", "Please repeat request"), response.getErrorObject());
+        List<? extends Article> articles = Article.acceptParser(new NewsApiParseArticleVisitor(), json);
+        assertEquals(0, articles.size());
     }
 }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.calpoly.abstractions.Article;
 import edu.calpoly.models.SimpleFormatArticle;
 import edu.calpoly.models.newsapi.NewsApiResponse;
+import edu.calpoly.parsers.NewsApiParseArticleVisitor;
+import edu.calpoly.parsers.SimpleFormatParseArticleVisitor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,12 +27,11 @@ class ArticleValidatorTest {
                 }""";
 
 
-        Article article = SimpleFormatArticle.fromJson(data);
-        assertNotNull(article);
+        List<? extends Article> articles = Article.acceptParser(new SimpleFormatParseArticleVisitor(), data);
+        assertNotNull(articles);
+        assertEquals(1, articles.size());
 
-        List<Article> articles = new ArrayList<>(Collections.singleton(article));
-
-        List<Article> filteredArticles = ArticleValidator.validateAndFilter(articles, null);
+        List<Article> filteredArticles = ArticleValidator.validateAndFilter(new ArrayList<>(articles), null);
 
         assertEquals(0, filteredArticles.size());
     }
@@ -58,12 +59,9 @@ class ArticleValidatorTest {
                 }
                 """;
 
-        NewsApiResponse response = NewsApiResponse.fromJson(json);
+        List<? extends Article> articles = Article.acceptParser(new NewsApiParseArticleVisitor(), json);
 
-        assertTrue(response.isSuccess());
-        List<Article> articles = new ArrayList<>(response.getSuccessObject().articles());
-
-        List<Article> filteredArticles = ArticleValidator.validateAndFilter(articles, null);
+        List<Article> filteredArticles = ArticleValidator.validateAndFilter(new ArrayList<>(articles), null);
 
         assertEquals(1, filteredArticles.size());
     }

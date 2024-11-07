@@ -4,6 +4,8 @@ import edu.calpoly.abstractions.Article;
 import edu.calpoly.models.SimpleFormatArticle;
 import edu.calpoly.models.newsapi.NewsApiArticle;
 import edu.calpoly.models.newsapi.NewsApiResponse;
+import edu.calpoly.parsers.NewsApiParseArticleVisitor;
+import edu.calpoly.parsers.SimpleFormatParseArticleVisitor;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,9 +45,9 @@ public class Main {
 
         List<Article> articles = new ArrayList<>();
 
-        articles.addAll(getSimpleFormatArticleFromFile("inputs/simple.txt"));
-        articles.addAll(getNewsApiArticlesFromFile("inputs/newsapi.txt"));
-        articles.addAll(getNewsApiArticlesFromHttp(newsApiKey, logger));
+        articles.addAll(Article.acceptParser(new SimpleFormatParseArticleVisitor(),  Files.readString(Path.of("inputs/simple.txt"), Charset.defaultCharset())));
+        articles.addAll(Article.acceptParser(new NewsApiParseArticleVisitor(),  Files.readString(Path.of("inputs/newsapi.txt"), Charset.defaultCharset())));
+        articles.addAll(Article.acceptParser(new NewsApiParseArticleVisitor(),  getNewsApiJsonFromHttp(newsApiKey, logger)));
 
         articles = ArticleValidator.validateAndFilter(articles, logger);
 
@@ -56,66 +58,27 @@ public class Main {
     }
 
     /**
-     * Fetches NewsAPI and returns the articles
+     * Fetches NewsAPI and returns the json
      *
      * @param apiKey Apikey to send to NewsAPI
      * @param logger to log any HTTP errors
-     * @return Articles
      * @throws IOException Failing to decode json
      * @throws InterruptedException Failed to send request
      */
-    public static List<Article> getNewsApiArticlesFromHttp(String apiKey, Logger logger) throws IOException, InterruptedException {
-        List<Article> articles = new ArrayList<>();
+    public static String getNewsApiJsonFromHttp(String apiKey, Logger logger) throws IOException, InterruptedException {
 
         try (HttpClient client = HttpClient.newHttpClient()) {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://newsapi.org/v2/top-headlines?country=us&apiKey=%s".formatted(apiKey)))
                     .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            String body = response.body();
 
-            NewsApiResponse parsedResponse = NewsApiResponse.fromJson(body);
-            if (parsedResponse.isSuccess()) {
-                articles.addAll(parsedResponse.getSuccessObject().articles());
-            } else {
-                logger.log(Level.WARNING, "NewsAPI returned error: {0}", parsedResponse);
+            if (response.statusCode() != 200) {
+                logger.log(Level.SEVERE, "Unexpected response code: " + response.statusCode() + "\n" + response.body());
             }
-        }
-        return articles;
-    }
 
-    /**
-     * Get News API Article from file
-     *
-     * @param path to find file at
-     * @return Articles extracted
-     * @throws IOException file can't be found or JSON is invalid
-     */
-    public static List<Article> getNewsApiArticlesFromFile(String path) throws IOException {
-        String content = Files.readString(Path.of(path), Charset.defaultCharset());
-        NewsApiResponse response = NewsApiResponse.fromJson(content);
-
-        if (response.isSuccess()) {
-            return new ArrayList<>(response.getSuccessObject().articles());
-        } else {
-            return new ArrayList<>();
+            return response.body();
         }
     }
 
-    /**
-     * Get simple Format Article frm a file
-     * @param path to find file at
-     * @return Articles extracted
-     * @throws IOException file can't be found or JSON is invalid
-     */
-    public static List<Article> getSimpleFormatArticleFromFile(String path) throws IOException {
-        String content = Files.readString(Path.of(path), Charset.defaultCharset());
-        SimpleFormatArticle response = SimpleFormatArticle.fromJson(content);
-
-        if (response != null) {
-            return new ArrayList<>(Collections.singleton(response));
-        } else {
-            return new ArrayList<>();
-        }
-    }
 }

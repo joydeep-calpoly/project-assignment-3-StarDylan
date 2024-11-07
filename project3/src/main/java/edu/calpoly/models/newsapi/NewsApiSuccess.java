@@ -1,5 +1,6 @@
 package edu.calpoly.models.newsapi;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,4 +10,4 @@ import java.util.List;
  * @param totalResults Number of articles returned by the service
  * @param articles     Articles included in API response
  */
-public record NewsApiSuccess(String status, int totalResults, List<NewsApiArticle> articles) { }
+public record NewsApiSuccess(String status, int totalResults, ArrayList<NewsApiArticle> articles) { }
